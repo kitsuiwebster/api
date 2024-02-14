@@ -1,4 +1,5 @@
 const Book = require('../models/Book')
+const fs = require('fs')
 
 exports.getAllBooks = (req, res) => {
     Book.find({})
@@ -12,14 +13,20 @@ exports.getBook = (req, res) => {
         . catch(error => res.status(404).json({ error }));
 }
 
-exports.createBook = (req, res) => {
-    const newBook = new Book({
-        ...req.body
-    })
-    newBook.save()
-    .then((createdBook) => res.status(201).json({ message: `${createdBook.book} a été créé`, data: createdBook}))
-    .catch(error => res.status(401).json({ error }))
-}
+exports.createBook = (req, res, next) => {
+    const thingObject = JSON.parse(req.body.thing);
+    delete thingObject._id;
+    delete thingObject._userId;
+    const thing = new Thing({
+        ...thingObject,
+        userId: req.auth.userId,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    });
+  
+    thing.save()
+    .then(() => { res.status(201).json({message: 'Livre enregistré !'})})
+    .catch(error => { res.status(400).json( { error })})
+ };
 
 exports.getBestRatingBooks = (req, res) => {
     Book.find().sort({ averageRating: -1 }).limit(3)
@@ -33,11 +40,24 @@ exports.updateBook = (req, res) => {
         .catch(error => res.status(403).json({ error: 'Unauthorized request' }));
 }
 
-exports.deleteBook = (req,res) => {
-    Book.deleteOne({ _id: req.params.id, userId: req.body.userId })
-        .then(() => res.status(200).json({ message: 'Book deleted!' }))
-        .catch(error => res.status(403).json({ error: 'Unauthorized request' }));
-}
+exports.deleteThing = (req, res, next) => {
+    Thing.findOne({ _id: req.params.id})
+        .then(thing => {
+            if (thing.userId != req.auth.userId) {
+                res.status(401).json({message: 'Not authorized'});
+            } else {
+                const filename = thing.imageUrl.split('/images/')[1];
+                fs.unlink(`images/${filename}`, () => {
+                    Thing.deleteOne({_id: req.params.id})
+                        .then(() => { res.status(200).json({message: 'Objet supprimé !'})})
+                        .catch(error => res.status(401).json({ error }));
+                });
+            }
+        })
+        .catch( error => {
+            res.status(500).json({ error });
+    });
+};
 
 exports.rateBook = (req, res) => {
     Book.findById(req.params.id)
