@@ -1,6 +1,8 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+// import { errors } from '../utils/mongooseErrors';
+const errors = require('../utils/mongooseErrors');
 
 exports.signup = (req, res) => {
     bcrypt.hash(req.body.password, 10)
@@ -11,7 +13,13 @@ exports.signup = (req, res) => {
         });
         newUser.save()
         .then(() => res.status(201).json({ message: `Bienvenue ${newUser.email} !` }))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => { 
+            if (error.code === errors.duplicatedKey) {
+                res.status(401).json({ error })
+            } else {
+                res.status(400).json({ error })
+            }
+        });
     })
     .catch(error => res.status(500).json({ error }));
 }

@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-
+const path = require('path');
 const booksRoutes = require('./routes/books')
 const userRoutes = require('./routes/users')
 
 const app = express();
+
 
 
 mongoose.connect(`mongodb+srv://kitsuiwebster:LuQo7qtgQkEPiyw3@p7.xderk1w.mongodb.net/test?retryWrites=true&w=majority`,
@@ -26,5 +26,7 @@ app.use((req, res, next) => {
 
 app.use('', booksRoutes, userRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
+
+console.log(__dirname)
 
 module.exports = app;
