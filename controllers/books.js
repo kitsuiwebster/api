@@ -4,7 +4,7 @@ const Rating = require('../models/Rating');
 const fs = require('fs');
 
 exports.getAllBooks = (req, res) => {
-    Book.find({_id: "65ce7ae84fc35aaa28cc32fa"})
+    Book.find()
     .then((books) => res.status(200).json( books ))
     .catch(error => res.status(404).json({ error }))
 }

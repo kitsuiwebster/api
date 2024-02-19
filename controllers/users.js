@@ -40,6 +40,7 @@ exports.signin = (req, res) => {
                         userId: user._id,
                         token: token
                     });
+                    console.log(token);
                 }
             })
             .catch(error => res.status(500).json({ error }));
