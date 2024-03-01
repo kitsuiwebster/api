@@ -1,7 +1,6 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// import { errors } from '../utils/mongooseErrors';
 const errors = require('../utils/mongooseErrors');
 
 exports.signup = (req, res) => {

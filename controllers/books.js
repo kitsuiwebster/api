@@ -1,6 +1,4 @@
 const Book = require('../models/Book');
-const User = require('../models/User');
-const Rating = require('../models/Rating');
 const fs = require('fs');
 
 exports.getAllBooks = (req, res) => {
@@ -32,7 +30,7 @@ exports.createBook = (req, res) => {
 	})
 };
 
-exports.getBestRatingBooks = (req, res) => {
+exports.getBestRatedBooks = (req, res) => {
     Book.find().sort({ averageRating: -1 }).limit(3)
         .then(books => res.status(200).json(books))
         .catch(error => res.status(400).json({ error }));
@@ -66,29 +64,20 @@ exports.deleteBook = (req, res, next) => {
 exports.rateBook = (req, res) => {
     Book.findById(req.params.id)
         .then(book => {
-            Rating.findOne({user: req.body.userId, book: book._id})
-            .then(rating => {
-                if (rating) {
-                    return res.status(400).json({ message: 'User has already rated this book.' });
-                } else {
-                    return
-                }
-            })
-            .then(() => {
-                const newRating = new Rating ({user: req.body.userId, book: book._id, grade: req.body.rating})
-                newRating.save()
-                .then(() => {
-					Rating.find({book: book._id})
-					.then( (allRates) => {
-						const totalGradeScore = allRates.reduce((acc, curr) => acc + curr.grade, req.body.rating);
-						// TODO: verifier commetn savoirle nombre d'elemetn retourné par mongoose (.length ?)
-						book.averageRating = totalGradeScore / (allRates.length + 1 );
-						book.save()
-						.then(updatedBook => res.status(201).json(updatedBook))
-						.catch(error => res.status(400).json({ error }));
-					})})
-				.catch( (error) => res.status(501).json({ error }));	
-            });
+            if (!book) {
+                return res.status(404).json({ error: 'Book not found' });
+            }
+            const userRateExists = book.ratings.find((rate) => rate.userId === req.body.userId);
+            if (userRateExists) {
+                userRateExists.grade = Number(req.body.rating);
+            } else {
+                book.ratings.push({ userId: req.body.userId, grade: Number(req.body.rating) });
+            }
+            const totalGradeScore = book.ratings.reduce((acc, curr) => acc + curr.grade, 0);
+                    book.averageRating = totalGradeScore / book.ratings.length;
+                    return book.save();
         })
-    .catch(error => res.status(404).json({ error: 'Book not found' }));
-}
+        .then(updatedBook => res.status(200).json(updatedBook))
+        .catch(error => res.status(500).json({ error }));
+};
+

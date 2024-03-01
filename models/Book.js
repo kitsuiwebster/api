@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-// const uniqueValidator = require('mangoose-unique-validator');
 
 const bookSchema = mongoose.Schema({
     title: { type: String, required: true },
@@ -14,6 +13,5 @@ const bookSchema = mongoose.Schema({
     }]
 });
 
-// bookSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('Book', bookSchema);
