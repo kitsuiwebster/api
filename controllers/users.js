@@ -14,13 +14,13 @@ exports.signup = (req, res) => {
         .then(() => res.status(201).json({ message: `Bienvenue ${newUser.email} !` }))
         .catch(error => { 
             if (error.code === errors.duplicatedKey) {
-                res.status(401).json({ error })
+                res.status(401).json()
             } else {
-                res.status(400).json({ error })
+                res.status(400).json()
             }
         });
     })
-    .catch(error => res.status(500).json({ error }));
+    .catch(error => res.status(500).json());
 }
 
 exports.signin = (req, res) => {
@@ -34,16 +34,15 @@ exports.signin = (req, res) => {
                 if (!valid) {
                     return res.status(401).json({ error: 'Paire identifiant/mot de passe incorrecte' });
                 } else {
-                    const token = jwt.sign({ userId: user._id }, 'RANDOM_TOKEN_SECRET', { expiresIn: '24h' });
+                    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
                     res.status(200).json({
                         userId: user._id,
                         token: token
                     });
-                    console.log(token);
                 }
             })
-            .catch(error => res.status(500).json({ error }));
+            .catch(error => res.status(500).json());
         }
     })
-    .catch(error => res.status(500).json({ error }));
+    .catch(error => res.status(500).json());
 }

@@ -6,9 +6,10 @@ const userRoutes = require('./routes/users')
 
 const app = express();
 
+require('dotenv').config();
 
-
-mongoose.connect(`mongodb+srv://kitsuiwebster:LuQo7qtgQkEPiyw3@p7.xderk1w.mongodb.net/test?retryWrites=true&w=majority`,
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
@@ -26,7 +27,5 @@ app.use((req, res, next) => {
 
 app.use('', booksRoutes, userRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
-
-console.log(__dirname)
 
 module.exports = app;

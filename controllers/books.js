@@ -4,36 +4,34 @@ const fs = require('fs');
 exports.getAllBooks = (req, res) => {
     Book.find()
     .then((books) => res.status(200).json( books ))
-    .catch(error => res.status(404).json({ error }))
+    .catch(error => res.status(404).json())
 }
 
 exports.getBook = (req, res) => {
     Book.findOne({ _id: req.params.id })
         .then(book => res.status(200).json(book))
-        . catch(error => res.status(404).json({ error }));
+        . catch(error => res.status(404).json());
 }
 
 exports.createBook = (req, res) => {
     const bookObject = JSON.parse(req.body.book);
-    console.log(bookObject)
     delete bookObject._id;
 	delete bookObject.userId;
     const book = new Book({
         ...bookObject,
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        imageUrl: `${req.protocol}://localhost:4000/images/${req.file.filename}`
     });
     book.save()
     .then(() => { res.status(201).json({message: 'Livre enregistré !'})})
     .catch(error => {
-		console.log(error)
-		res.status(400).json( { error })
+		res.status(400).json( )
 	})
 };
 
 exports.getBestRatedBooks = (req, res) => {
     Book.find().sort({ averageRating: -1 }).limit(3)
         .then(books => res.status(200).json(books))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => res.status(400).json());
 }
 
 exports.updateBook = (req, res) => {
@@ -52,12 +50,12 @@ exports.deleteBook = (req, res, next) => {
                 fs.unlink(`images/${filename}`, () => {
                     Book.deleteOne({_id: req.params.id})
                         .then(() => { res.status(200).json({message: 'Objet supprimé !'})})
-                        .catch(error => res.status(401).json({ error }));
+                        .catch(error => res.status(401).json());
                 });
             }
         })
         .catch( error => {
-            res.status(500).json({ error });
+            res.status(500).json();
     });
 };
 
@@ -78,6 +76,6 @@ exports.rateBook = (req, res) => {
                     return book.save();
         })
         .then(updatedBook => res.status(200).json(updatedBook))
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => res.status(500).json());
 };
 
